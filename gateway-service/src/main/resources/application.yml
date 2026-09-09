@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+
+# Cache Nodes to monitor and route requests
+cluster:
+  nodes: "http://localhost:8081,http://localhost:8082,http://localhost:8083"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  endpoint:
+    health:
+      show-details: "always"
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} [traceId=%X{X-Trace-Id:-}] - %msg%n"
+  level:
+    root: INFO
+    com.gateway: DEBUG
