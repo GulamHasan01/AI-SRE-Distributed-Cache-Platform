@@ -1,0 +1,138 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: cache-service
+
+# ============================================================
+# Cache Service Configuration
+# All tuneable parameters live here so nothing is hard-coded.
+# ============================================================
+cache:
+  # Maximum number of entries the store will hold.
+  max-size: 10000
+
+  # Eviction policy applied when the store is full.
+  # LRU         → evict the least recently used entry (recommended)
+  # NO_EVICTION → reject the PUT with HTTP 507 (Phase 1 behavior)
+  eviction-policy: LRU
+
+  # TTL (Time-To-Live) configuration
+  ttl:
+    # Default TTL in seconds for entries that don't specify one.
+    # -1 means no default TTL — entries live forever unless a TTL is passed in the request.
+    default-seconds: -1
+    # How often the background scheduler sweeps for expired entries (milliseconds).
+    sweep-interval-ms: 5000
+
+  # Node metadata — used from Phase 3 onwards for cluster awareness.
+  node:
+    id: node-1
+    host: localhost
+    port: 8081
+
+  # Cluster communication settings — Phase 4 (Inter-Node HTTP)
+  # These timeouts guard against slow/unresponsive remote nodes.
+  cluster:
+    # Max time (ms) to wait for a connection to a remote node.
+    connect-timeout-ms: 2000
+    # Max time (ms) to wait for a response body from a remote node.
+    read-timeout-ms: 5000
+    # Number of retry attempts when a remote node request fails.
+    max-retries: 2
+    # Number of virtual positions on the consistent hash ring per physical node.
+    # Higher = more even key distribution. 150 is a proven sweet-spot for small clusters.
+    virtual-nodes-per-node: 150
+    # Replication factor: number of total cache copies in the cluster
+    replication-factor: 2
+
+    # --------------------------------------------------------
+    # Phase 7: Self-Healing — Heartbeat Emitter
+    # --------------------------------------------------------
+    # How often (ms) this node pings all known peers to confirm liveness.
+    heartbeat-interval-ms: 5000
+    # Max time (ms) to wait for a peer's /ping response before counting as missed.
+    heartbeat-timeout-ms: 2000
+
+    # --------------------------------------------------------
+    # Phase 7: Self-Healing — Failure Detector Thresholds
+    # --------------------------------------------------------
+    # No successful heartbeat for this long (ms) → node transitions UP → SUSPECT.
+    suspect-threshold-ms: 10000
+    # No successful heartbeat for this long (ms) → node transitions SUSPECT → DOWN.
+    down-threshold-ms: 20000
+
+    # --------------------------------------------------------
+    # Phase 7: Self-Healing — Static Peer List
+    # Each entry is "host:port" of a peer node.
+    # This node will heartbeat-check every peer in this list.
+    # --------------------------------------------------------
+    peers:
+      - "localhost:8082"
+      - "localhost:8083"
+
+  # ============================================================
+  # Phase 8: Hardened Write Replication
+  # ============================================================
+  replication:
+    # true  = async (non-blocking): client gets 201 as soon as primary write succeeds;
+    #         replicas are written in background by the replication thread pool.
+    # false = sync: client waits until min-ack-nodes replicas have acknowledged.
+    async: true
+    # (sync mode only) Minimum replica nodes that must ACK before coordinator returns.
+    min-ack-nodes: 1
+    # Threads dedicated to sending replication requests (one thread per replica call).
+    thread-pool-size: 4
+
+  # ============================================================
+  # Phase 10: Persistence & Disk Snapshotting
+  # ============================================================
+  persistence:
+    enabled: true
+    file-path: "./data/cache-snapshot.json"
+    snapshot-interval-seconds: 60
+
+# ============================================================
+# Actuator — expose health and info endpoints for Phase 10 metrics
+# ============================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,threaddump,heapdump,loggers
+  endpoint:
+    health:
+      show-details: always
+    threaddump:
+      enabled: true
+
+# ============================================================
+# Chaos Engineering (DEV/DEMO ONLY — disabled by default)
+# Set CACHE_CHAOS_ENABLED=true in Docker environment to enable.
+# ============================================================
+cache:
+  chaos:
+    enabled: ${CACHE_CHAOS_ENABLED:false}
+
+# ============================================================
+# Logging
+# ============================================================
+logging:
+  level:
+    root: INFO
+    com.cache: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} [traceId=%X{traceId:-}] - %msg%n"
+
+# ============================================================
+# OpenAPI / Swagger UI
+# ============================================================
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
