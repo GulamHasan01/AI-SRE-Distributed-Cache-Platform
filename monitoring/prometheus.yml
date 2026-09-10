@@ -1,0 +1,78 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: "distributed-cache-platform"
+    environment: "development"
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "sre-agent:9090"  # SRE agent receives webhook alerts
+      path_prefix: "/api/sre/alerts"
+
+scrape_configs:
+
+  # ============================================================
+  # Cache Nodes (Spring Boot Actuator + Micrometer Prometheus)
+  # ============================================================
+  - job_name: "cache-node-1"
+    static_configs:
+      - targets: ["cache-node-1:8081"]
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 10s
+    relabel_configs:
+      - target_label: node_id
+        replacement: "node-1"
+      - target_label: service
+        replacement: "cache-service"
+
+  - job_name: "cache-node-2"
+    static_configs:
+      - targets: ["cache-node-2:8082"]
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 10s
+    relabel_configs:
+      - target_label: node_id
+        replacement: "node-2"
+      - target_label: service
+        replacement: "cache-service"
+
+  - job_name: "cache-node-3"
+    static_configs:
+      - targets: ["cache-node-3:8083"]
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 10s
+    relabel_configs:
+      - target_label: node_id
+        replacement: "node-3"
+      - target_label: service
+        replacement: "cache-service"
+
+  # ============================================================
+  # API Gateway
+  # ============================================================
+  - job_name: "gateway-service"
+    static_configs:
+      - targets: ["gateway-service:8080"]
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: "gateway-service"
+
+  # ============================================================
+  # SRE Agent (self-monitoring)
+  # ============================================================
+  - job_name: "sre-agent"
+    static_configs:
+      - targets: ["sre-agent:9090"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: service
+        replacement: "sre-agent"
