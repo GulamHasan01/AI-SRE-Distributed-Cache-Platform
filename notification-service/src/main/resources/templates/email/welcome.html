@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/base :: layout(~{::content})}">
+<body>
+<th:block th:fragment="content">
+  <h1>Welcome to Community Platform! 🎉</h1>
+  <p>Hi <span class="highlight" th:text="${username != null ? username : 'there'}">there</span>,</p>
+  <p>
+    Your account has been created successfully. You're now part of a growing community
+    of developers building, sharing, and collaborating on projects.
+  </p>
+
+  <div class="success">
+    ✓ Account created · Email: <strong th:text="${email}">you@example.com</strong>
+  </div>
+
+  <p>Here's what you can do to get started:</p>
+  <ul style="margin: 0 0 20px 20px; color: #8b90a8; font-size:15px; line-height:2;">
+    <li>Complete your profile</li>
+    <li>Upload your first project</li>
+    <li>Explore projects from the community</li>
+    <li>Set up two-factor authentication</li>
+  </ul>
+
+  <a class="btn" th:href="${frontendUrl}">Go to Dashboard →</a>
+
+  <div class="divider"></div>
+
+  <p class="small">
+    If you didn't create this account, please
+    <a th:href="${frontendUrl + '/support'}" style="color:#6c63ff;">contact support</a> immediately.
+  </p>
+</th:block>
+</body>
+</html>

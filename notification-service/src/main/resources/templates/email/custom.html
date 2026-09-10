@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/base :: layout(~{::content})}">
+<body><th:block th:fragment="content">
+  <h1 th:text="${title ?: 'Message from Community Platform'}">Message</h1>
+  <p th:text="${body ?: ''}"></p>
+  <th:block th:if="${actionUrl != null and actionLabel != null}">
+    <a class="btn" th:href="${actionUrl}" th:text="${actionLabel}">View →</a>
+  </th:block>
+</th:block></body>
+</html>

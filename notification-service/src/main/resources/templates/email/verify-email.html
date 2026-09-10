@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/base :: layout(~{::content})}">
+<body>
+<th:block th:fragment="content">
+  <h1>Verify your email address</h1>
+  <p>Hi <span class="highlight" th:text="${username != null ? username : 'there'}">there</span>,</p>
+  <p>
+    Please verify your email address to unlock all platform features.
+    This link expires in <strong>24 hours</strong>.
+  </p>
+
+  <a class="btn" th:href="${verifyLink}">Verify Email Address →</a>
+
+  <div class="divider"></div>
+
+  <p>Or copy and paste this link into your browser:</p>
+  <div class="code-block" th:text="${verifyLink}">https://platform.com/verify?token=...</div>
+
+  <p class="small">
+    If you didn't request email verification, you can safely ignore this email.
+    Your account remains secure.
+  </p>
+</th:block>
+</body>
+</html>

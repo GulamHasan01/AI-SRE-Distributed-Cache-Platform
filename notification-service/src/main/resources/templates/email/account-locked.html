@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/base :: layout(~{::content})}">
+<body><th:block th:fragment="content">
+  <h1>Your account has been temporarily locked</h1>
+  <p>Hi <span class="highlight" th:text="${username != null ? username : 'there'}">there</span>,</p>
+  <p>
+    Your account has been temporarily locked due to
+    <strong th:text="${failedAttempts ?: '5'}">5</strong> consecutive failed login attempts.
+  </p>
+
+  <div class="danger">
+    🔒 Account locked until: <strong th:text="${lockedUntil}">30 minutes from now</strong>
+  </div>
+
+  <p>
+    Your account will automatically unlock after the lockout period.
+    If you forgot your password, you can reset it now:
+  </p>
+
+  <a class="btn" th:href="${frontendUrl + '/forgot-password'}">Reset Password →</a>
+
+  <div class="divider"></div>
+  <p class="small">
+    If you did not attempt to log in, your account may be under a brute-force attack.
+    Consider enabling Two-Factor Authentication after unlocking.
+  </p>
+</th:block></body>
+</html>

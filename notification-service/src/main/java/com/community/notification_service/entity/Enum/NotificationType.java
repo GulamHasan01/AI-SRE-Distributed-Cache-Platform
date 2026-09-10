@@ -1,0 +1,21 @@
+package com.community.notification_service.entity.Enum;
+
+public enum NotificationType {
+    PROJECT_STARRED,
+    PROJECT_LIKED,
+    PROJECT_COMMENTED,
+
+    NEW_FOLLOWER,
+    MENTION,
+
+    ACCOUNT_VERIFIED,
+    CREATOR_VERIFIED,
+    PASSWORD_CHANGED,
+    SUSPICIOUS_LOGIN,
+
+    SYSTEM_ANNOUNCEMENT,
+    PAYMENT_RECEIVED,
+    SUBSCRIPTION_EXPIRING,
+
+    GENERAL
+}

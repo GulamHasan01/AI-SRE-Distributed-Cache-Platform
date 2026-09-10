@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/base :: layout(~{::content})}">
+<body><th:block th:fragment="content">
+  <h1>Your account has been deactivated</h1>
+  <p>Hi <span class="highlight" th:text="${username != null ? username : 'there'}">there</span>,</p>
+  <p>Your account has been deactivated as requested.</p>
+  <div class="warning">
+    Your profile and projects are no longer publicly visible.
+    Your data is safely stored and you can reactivate at any time by logging in.
+  </div>
+  <p>Changed your mind?</p>
+  <a class="btn" th:href="${frontendUrl + '/login'}">Reactivate Account →</a>
+  <div class="divider"></div>
+  <p class="small">
+    If you didn't request this, contact
+    <a th:href="${frontendUrl + '/support'}" style="color:#6c63ff;">support</a> immediately.
+  </p>
+</th:block></body>
+</html>

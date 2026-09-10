@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/base :: layout(~{::content})}">
+<body><th:block th:fragment="content">
+  <h1>⚠ Suspicious login detected</h1>
+  <p>Hi <span class="highlight" th:text="${username != null ? username : 'there'}">there</span>,</p>
+  <p>We detected a login to your account from an unfamiliar location.</p>
+
+  <div class="warning">
+    <strong>Login Details</strong><br/>
+    IP Address: <strong th:text="${ipAddress}">0.0.0.0</strong><br/>
+    Location: <strong th:text="${location ?: 'Unknown'}">Unknown</strong><br/>
+    Device: <strong th:text="${device ?: 'Unknown'}">Unknown</strong><br/>
+    Time: <strong th:text="${loginTime}">just now</strong>
+  </div>
+
+  <p>If this was you, no action is needed.</p>
+  <p>If this wasn't you, secure your account immediately:</p>
+
+  <a class="btn" th:href="${frontendUrl + '/security'}">Secure My Account →</a>
+
+  <div class="divider"></div>
+  <p class="small">
+    We recommend enabling Two-Factor Authentication to prevent unauthorized access.
+  </p>
+</th:block></body>
+</html>

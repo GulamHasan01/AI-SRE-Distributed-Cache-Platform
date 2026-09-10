@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/base :: layout(~{::content})}">
+<body><th:block th:fragment="content">
+  <h1>Welcome back! 👋</h1>
+  <p>Hi <span class="highlight" th:text="${username != null ? username : 'there'}">there</span>,</p>
+  <p>Your account has been reactivated. Your profile and projects are visible again.</p>
+  <div class="success">✓ Account reactivated successfully</div>
+  <a class="btn" th:href="${frontendUrl}">Go to Dashboard →</a>
+</th:block></body>
+</html>

@@ -1,0 +1,59 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: notification-service
+
+  # ── MongoDB ─────────────────────────────────────────────────────────────────
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/notification-db}
+      auto-index-creation: true
+
+  # ── Mail (SMTP) ──────────────────────────────────────────────────────────────
+  # Supports Gmail, SendGrid SMTP, Mailtrap (dev), any SMTP provider
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME:ghulamhasan665@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+  # ── Async thread pool ────────────────────────────────────────────────────────
+  task:
+    execution:
+      pool:
+        core-size:  4
+        max-size:   16
+        queue-capacity: 100
+      thread-name-prefix: notify-async-
+
+# ── App config ─────────────────────────────────────────────────────────────────
+app:
+  mail:
+    from-name: ${MAIL_FROM_NAME:Community Platform}
+    from-address: ${MAIL_FROM_ADDRESS:ghulamhasan390@gmail.com}
+    frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
+  backend-url: ${BACKEND_URL:http://localhost:8081}
+
+  otp:
+    expiry-minutes: 5
+    length: 6
+    max-attempts: 3
+
+  rate-limit:
+    emails-per-hour: 10
+    otp-per-minute: 3
+
+# ── Actuator ───────────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

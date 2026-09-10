@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/base :: layout(~{::content})}">
+<body><th:block th:fragment="content">
+  <h1>🎉 You're now a Verified Creator!</h1>
+  <p>Hi <span class="highlight" th:text="${username != null ? username : 'there'}">there</span>,</p>
+  <p>
+    Congratulations! Your account has been reviewed and granted
+    <strong style="color:#eab308;">✓ Creator Verified</strong> status.
+  </p>
+
+  <div class="success">
+    ✓ Creator badge on your profile<br/>
+    ✓ Enhanced project visibility<br/>
+    ✓ Access to creator analytics<br/>
+    ✓ Priority in search results
+  </div>
+
+  <p>Your verified badge is now live on your profile. Start sharing your work!</p>
+
+  <a class="btn" th:href="${frontendUrl + '/projects'}">Upload a Project →</a>
+
+  <div class="divider"></div>
+  <p class="small">
+    Creator status is subject to our community guidelines.
+    Please review our <a th:href="${frontendUrl + '/guidelines'}" style="color:#6c63ff;">Creator Guidelines</a>.
+  </p>
+</th:block></body>
+</html>
