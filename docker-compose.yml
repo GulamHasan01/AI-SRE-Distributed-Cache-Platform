@@ -1,0 +1,201 @@
+version: '3.8'
+
+services:
+  # Database for IAM & Notification microservices
+  mongodb:
+    image: mongo:7.0
+    container_name: cache-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: community_platform
+    networks:
+      - cache-net
+
+  # Distributed Cache Node 1
+  cache-node-1:
+    build:
+      context: ./cache-service
+      dockerfile: Dockerfile
+    container_name: cache-node-1
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      CACHE_NODE_ID: node-1
+      CACHE_NODE_HOST: cache-node-1
+      CACHE_NODE_PORT: 8081
+      CACHE_CLUSTER_PEERS: "http://cache-node-2:8082,http://cache-node-3:8083"
+      CACHE_CHAOS_ENABLED: "true"
+    networks:
+      - cache-net
+
+  # Distributed Cache Node 2
+  cache-node-2:
+    build:
+      context: ./cache-service
+      dockerfile: Dockerfile
+    container_name: cache-node-2
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      CACHE_NODE_ID: node-2
+      CACHE_NODE_HOST: cache-node-2
+      CACHE_NODE_PORT: 8082
+      CACHE_CLUSTER_PEERS: "http://cache-node-1:8081,http://cache-node-3:8083"
+      CACHE_CHAOS_ENABLED: "true"
+    networks:
+      - cache-net
+    depends_on:
+      - cache-node-1
+
+  # Distributed Cache Node 3
+  cache-node-3:
+    build:
+      context: ./cache-service
+      dockerfile: Dockerfile
+    container_name: cache-node-3
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+      CACHE_NODE_ID: node-3
+      CACHE_NODE_HOST: cache-node-3
+      CACHE_NODE_PORT: 8083
+      CACHE_CLUSTER_PEERS: "http://cache-node-1:8081,http://cache-node-2:8082"
+      CACHE_CHAOS_ENABLED: "true"
+    networks:
+      - cache-net
+    depends_on:
+      - cache-node-1
+
+  # API Gateway & Edge Router
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    environment:
+      CLUSTER_NODES: "http://cache-node-1:8081,http://cache-node-2:8082,http://cache-node-3:8083"
+    networks:
+      - cache-net
+    depends_on:
+      - cache-node-1
+      - cache-node-2
+      - cache-node-3
+
+  # Notification Microservice
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATA_MONGODB_URI: "mongodb://mongodb:27017/community_notification"
+    networks:
+      - cache-net
+    depends_on:
+      - mongodb
+
+  # IAM Microservice
+  iam-service:
+    build:
+      context: "./iam-service - updated"
+      dockerfile: Dockerfile
+    container_name: iam-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATA_MONGODB_URI: "mongodb://mongodb:27017/community_iam"
+    networks:
+      - cache-net
+    depends_on:
+      - mongodb
+
+  # Prometheus Observability Server
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: cache-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    networks:
+      - cache-net
+    depends_on:
+      - cache-node-1
+      - cache-node-2
+      - cache-node-3
+      - gateway-service
+
+  # SRE Cluster Model Context Protocol (MCP) Server
+  sre-cluster-mcp:
+    build:
+      context: ./sre-cluster-mcp
+      dockerfile: Dockerfile
+    container_name: sre-mcp
+    ports:
+      - "8000:8000"
+    environment:
+      CACHE_NODE_1_URL: "http://cache-node-1:8081"
+      CACHE_NODE_2_URL: "http://cache-node-2:8082"
+      CACHE_NODE_3_URL: "http://cache-node-3:8083"
+      GATEWAY_URL: "http://gateway-service:8080"
+      PROMETHEUS_URL: "http://prometheus:9090"
+      DOCKER_SOCKET: "unix:///var/run/docker.sock"
+      ALLOWED_NODE_IDS: "node-1,node-2,node-3"
+      ALLOWED_CONTAINER_NAMES: "cache-node-1,cache-node-2,cache-node-3"
+      CHAOS_ENABLED: "true"
+      AUDIT_LOG_PATH: "/app/audit/audit_log.jsonl"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./audit:/app/audit
+    networks:
+      - cache-net
+    depends_on:
+      - gateway-service
+
+  # Autonomous AI SRE Incident Response Agent
+  sre-agent:
+    build:
+      context: ./sre-agent
+      dockerfile: Dockerfile
+    container_name: sre-agent
+    ports:
+      - "9090:9090"
+    environment:
+      MCP_SERVER_URL: "http://sre-mcp:8000"
+      AGENT_API_PORT: "9090"
+      INCIDENTS_DIR: "/app/incidents"
+      APPROVAL_TIMEOUT_SECONDS: "120"
+      VERIFICATION_WAIT_SECONDS: "15"
+    volumes:
+      - ./incidents:/app/incidents
+      - ./audit:/app/audit
+    networks:
+      - cache-net
+    depends_on:
+      - sre-cluster-mcp
+
+  # Cluster Monitoring & SRE Frontend Console
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cache-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - cache-net
+    depends_on:
+      - gateway-service
+
+networks:
+  cache-net:
+    driver: bridge
