@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sre-agent
+  namespace: cache-platform
+  labels:
+    app: sre-agent
+spec:
+  ports:
+    - port: 8000
+      name: http-webhook
+  selector:
+    app: sre-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sre-agent
+  namespace: cache-platform
+  labels:
+    app: sre-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sre-agent
+  template:
+    metadata:
+      labels:
+        app: sre-agent
+    spec:
+      containers:
+        - name: agent
+          image: ghcr.io/gulamhasan01/sre-agent:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: AGENT_PORT
+              value: "8000"
+            - name: MCP_SERVER_URL
+              value: "http://localhost:8001"
+            - name: GATEWAY_URL
+              value: "http://gateway-service:8080"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+        - name: mcp-sidecar
+          image: ghcr.io/gulamhasan01/sre-cluster-mcp:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+              name: mcp
+          env:
+            - name: MCP_PORT
+              value: "8001"
+            - name: PROMETHEUS_URL
+              value: "http://prometheus:9090"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
