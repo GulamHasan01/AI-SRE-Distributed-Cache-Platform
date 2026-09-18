@@ -216,3 +216,16 @@ This roadmap breaks down the construction, validation, and incremental pushing o
   - `e2e_cluster_test.py`
 - **Verification**: Run `python e2e_cluster_test.py` against running local cluster
 - **Commit Message**: `feat(e2e): finalize multi-container docker orchestration and end-to-end test verification`
+
+---
+
+### Phase 7: Resilience Engineering, Chaos Matrix & Production Hardening (Post-Roadmap Enhancements)
+
+- **Actuator Cluster Health Indicator**: Deep health indicator inspecting cluster quorum and ring partition status.
+- **Observability Pipeline**: Production Grafana cluster dashboard provisioning and Alertmanager webhook dispatch.
+- **Autonomous SRE Runbook Engine**: Rule-based mitigation runbooks for heap exhaustion, split-brain, and cache stampede with unit tests.
+- **API Gateway Resilience**: Token bucket rate limiter and thread-safe dynamic circuit breaker.
+- **Chaos Scenarios**: Automated cascading failure and network latency injection suite.
+- **Kubernetes Production Manifests**: K8s StatefulSet with headless peer discovery, Gateway deployment, SRE sidecar, and Prometheus ConfigMap.
+- **Distributed Cluster Benchmarks**: Concurrency load testing suite measuring QPS, P50-P99 latencies, and hash ring entropy.
+
